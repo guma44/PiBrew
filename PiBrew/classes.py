@@ -1,58 +1,150 @@
-from threading import Thread
+import threading
+from flask.ext.socketio import emit
+import time
+from random import randint
+# import RPi.GPIO as GPIO
+
+class Sensor:
+    "Class implementing temperature sensor"
+    def read_temperature(self):
+        return randint(0, 99)
+
+class Timer:
+    def __init__(self):
+        self.strt_time = None
+
+    def start(self):
+        self.start_time = time.time()
+
+    def elapsed(self, how='minutes'):
+        if how == 'minutes':
+            return (time.time() - self.start_time)/60.0
+        else:
+            return time.time() - self.start_time
+
+    def is_on(self):
+        if self.star_time is None:
+            return False
+        else:
+            return True
+
+
+class Heater:
+    """Class that governs the heating process with GPIO"""
+    # def __init__(self, pin_number):
+    #     if pin_number > 0:
+    #         GPIO.setup(pin_number, GPIO.OUT)
+
+    # def heat(cycle_time, duty_cycle):
+    #     if duty_cycle == 0:
+    #         GPIO.output(pin_number, 0)
+    #         time.sleep(cycle_time)
+    #     elif duty_cycle == 100:
+    #         GPIO.output(pin_number, 1)
+    #         time.sleep(cycle_time)
+    #     else:
+    #         on_time, off_time = self.get_on_off_time(cycle_time, duty_cycle)
+    #         GPIO.output(pin_number, 1)
+    #         time.sleep(on_time)
+    #         GPIO.output(pin_number, 0)
+    #         time.sleep(off_time)
+    def heat(self, cycle_time, duty_cycle):
+        print "Heating..."
+        time.sleep(cycle_time)
+
+    def get_on_off_time(self, ct, dt):
+        power = duty_cycle/100.0 # duty is in percent
+        on_time = cycle_time*(power)
+        off_time = cycle_time*(1.0 - power)
+        return (on_time, off_time)
 
 # PIC controller class acting as a thread
-class PIDController(Thread):
+class TemperatureController(threading.Thread):
 
-    def __init__(self, sensor, pid, mode='off'):
+    def __init__(self, socketio, sensor, pid, heater, params):
+        super(TemperatureController, self).__init__()
+        self.socketio = socketio
         self.sensor = sensor
         self.pid = pid
-        self.mode = mode
+        self.heater = heater
+        self.params = params
         self._stop = threading.Event()
+        self.mode = None
+        self.target_temperature = None
+        self.recipe = None
+        self.namespace = '/test'
+        self.step_temperature_reached = False
+        self.step_timer = Timer()
 
     # Signals
-    def set_current_temperature(temp):
-        pass
-    def set_temperature(temp):
-        pass
-    def set_current_power(power):
-        pass
-    def set_current_action(action):
-        pass
-    def set_remain_time(t):
-        pass
-    def enable_continue_button(state):
-        pass
+    def emit_current_temperature(self, temp):
+        self.socketio.emit('current_temperature', {'temperature': temp}, namespace=self.namespace)
+
+    def emit_current_power(self, power):
+        self.socketio.emit('current_power', {'power': power}, namespace=self.namespace)
+
+    def emit_current_action(self, action):
+        self.socketio.emit('current_action', {'action': action}, namespace=self.namespace)
+
+    def emit_remaining_time(self, t):
+        mins, secs = divmod(t, 60)
+        timeformat = '{:02d}:{:02d}'.format(mins, secs)
+        self.socketio.emit('remaining_time', {'remaining_time': timeformat}, namespace=self.namespace)
+
+    def enable_continue_button(self):
+        self.socketio.emit('enable_continue_button')
+
+    def disable_continue_button(self):
+        self.socketio.emit('disable_continue_button')
+
+    # Setters
+    def set_target_temperature(self, temp):
+        self.target_temperature = temp
+
     def set_mode(self, mode):
         self.mode = mode
 
-    # Slots
-    def set_recipe(recipe):
+    def set_recipe(self, recipe):
+        self.recipe = recipe
+
+    def set_current_step(self, step_number):
+        self.step = step_number
+
+    def start_recipe(recipe):
+        self.set_recipe(recipe)
+        self.set_current_step(0)
+        self.recipe_timer = Timer().start()
+        self.set_mode('recipe')
+
+    def run(self):
+        step_start_time = None
+        while not self.is_stopped():
+            current_temperature = self.sensor.read_temperature()
+            temp_reached = current_temperature >= self.recipe.steps[step].temperature
+            if self.mode == 'recipe':
+                if temp_reached and not self.step_timer.is_on():
+                    pass
+                elif temp_reached and self.step_timer.is_on():
+                    pass
+                elif not temp_reached and not self.step_time.is_on():
+                    pass
+            elif self.mode == 'manual':
+                pass
+            else:
+                current_power = randint(0, 50)
+                self.emit_current_temperature(current_temperature)
+                self.emit_current_power(current_power)
+                self.heater.heat(int(self.params['cycle_time']), current_power)
+
+    def activate_recipe_step():
+        pass
+    def log_temperature():
         pass
     def continue_clicked():
         pass
     def fulsh_csv_file():
         pass
     def stop_recipe():
-        pass
-
-    def run():
-        while not self.is_stopped():
-            current_temperature = self.sensor.read_temperature()
-            if self.mode == 'recipe':
-                pass
-            elif self.mode == 'manual':
-                pass
-            else:
-                pass
-    def initialize_temperature_sensor():
-        pass
-    def activate_recipe_step():
-        pass
-    def log_temperature():
-        pass
-    def beep():
-        pass
-    def end_beep:
         pass
     def stop(self):
         print "PIDController was stopped!"
@@ -63,7 +155,7 @@ class PIDController(Thread):
 
 
 class PID:
-    """PID as implemented by steve71 at https://github.com/steve71/RasPiBrew/blob/master/RasPiBrew"""
+    """PID implemented by steve71 at https://github.com/steve71/RasPiBrew/blob/master/RasPiBrew"""
     ek_1 = 0.0  # e[k-1] = SP[k-1] - PV[k-1] = Tset_hlt[k-1] - Thlt[k-1]
     ek_2 = 0.0  # e[k-2] = SP[k-2] - PV[k-2] = Tset_hlt[k-2] - Thlt[k-2]
     xk_1 = 0.0  # PV[k-1] = Thlt[k-1]

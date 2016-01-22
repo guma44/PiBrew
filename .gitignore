@@ -1,6 +1,7 @@
 *
-!./README.md
-!./LICENSE
+!README.md
+!LICENSE
+!requirements.txt
 !.gitignore
 !*.py
 !*.js

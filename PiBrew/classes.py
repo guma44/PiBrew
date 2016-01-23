@@ -11,7 +11,7 @@ class Sensor:
 
 class Timer:
     def __init__(self):
-        self.strt_time = None
+        self.start_time = None
 
     def start(self):
         self.start_time = time.time()
@@ -23,9 +23,33 @@ class Timer:
             return time.time() - self.start_time
 
     def is_on(self):
-        if self.star_time is None:
+        if self.start_time is None:
             return False
         else:
+            return True
+
+class RecipeManager:
+    def __init__(self, recipe):
+        self.recipe = recipe
+        self.steps = recipe.steps
+        self.nsteps = len(self.steps)
+
+    def start(self):
+        self.timer = Timer()
+        self.timer.start()
+        self.step_number = 0
+        self.step_timer = Timer()
+        self.current_step = self.steps[0]
+        self.button_enabled = False
+
+    def next_step(self):
+        if self.step_number + 1 >= self.nsteps:
+            return False
+        else:
+            self.step_number += 1
+            self.current_step = self.steps[self.step_number]
+            self.step_timer = Timer()
+            self.button_enabled = False
             return True
 
 
@@ -70,11 +94,9 @@ class TemperatureController(threading.Thread):
         self.params = params
         self._stop = threading.Event()
         self.mode = None
-        self.target_temperature = None
         self.recipe = None
         self.namespace = '/test'
-        self.step_temperature_reached = False
-        self.step_timer = Timer()
+        self.continue_clicked = False
 
     # Signals
     def emit_current_temperature(self, temp):
@@ -92,10 +114,10 @@ class TemperatureController(threading.Thread):
         self.socketio.emit('remaining_time', {'remaining_time': timeformat}, namespace=self.namespace)
 
     def enable_continue_button(self):
-        self.socketio.emit('enable_continue_button')
+        self.socketio.emit('enable_continue_button', namespace=self.namespace)
 
     def disable_continue_button(self):
-        self.socketio.emit('disable_continue_button')
+        self.socketio.emit('disable_continue_button', namespace=self.namespace)
 
     # Setters
     def set_target_temperature(self, temp):
@@ -105,29 +127,71 @@ class TemperatureController(threading.Thread):
         self.mode = mode
 
     def set_recipe(self, recipe):
-        self.recipe = recipe
+        self.recipe = RecipeManager(recipe)
 
-    def set_current_step(self, step_number):
-        self.step = step_number
+    def set_continue_clicked(self):
+        self.continue_clicked = True
 
-    def start_recipe(recipe):
+    def start_recipe(self, recipe):
         self.set_recipe(recipe)
-        self.set_current_step(0)
-        self.recipe_timer = Timer().start()
+        self.recipe.start()
         self.set_mode('recipe')
+
+    def stop_recipe(self):
+        self.recipe = None
+        self.set_mode('off')
+        self.continue_clicked = False
+        self.disable_continue_button()
 
     def run(self):
         step_start_time = None
         while not self.is_stopped():
             current_temperature = self.sensor.read_temperature()
-            temp_reached = current_temperature >= self.recipe.steps[step].temperature
             if self.mode == 'recipe':
-                if temp_reached and not self.step_timer.is_on():
-                    pass
-                elif temp_reached and self.step_timer.is_on():
-                    pass
-                elif not temp_reached and not self.step_time.is_on():
-                    pass
+                temp_reached = current_temperature >= self.recipe.current_step.temperature
+                print "Step name", self.recipe.current_step.name
+                if temp_reached and not self.recipe.step_timer.is_on():
+                    self.recipe.step_timer.start()
+                if self.recipe.step_timer.is_on():
+                    if self.recipe.step_timer.elapsed() >= self.recipe.current_step.span and self.recipe.current_step.span > -1:
+                        is_next_step = self.recipe.next_step()
+                        print "reached span"
+                        if not is_next_step:
+                            self.stop_recipe()
+                    elif self.recipe.current_step.span <= -1:
+                        if self.continue_clicked:
+                            is_next_step = self.recipe.next_step()
+                            print "continue_is_clicked"
+                            if not is_next_step:
+                                self.stop_recipe()
+                            else:
+                                self.continue_clicked = False
+                                assert not self.recipe.button_enabled, 'Button should be disabled here'
+                                self.disable_continue_button()
+                        else:
+                            if not self.recipe.button_enabled:
+                                print "Button not enabled"
+                                self.enable_continue_button()
+                            #TODO this is just for thest
+                            print "Im in -1"
+                            current_power = randint(0, 50)
+                            self.emit_current_temperature(current_temperature)
+                            self.emit_current_power(current_power)
+                            self.heater.heat(int(self.params['cycle_time']), current_power)
+
+
+                    else:
+                        #TODO this is just for thest
+                        current_power = randint(0, 50)
+                        self.emit_current_temperature(current_temperature)
+                        self.emit_current_power(current_power)
+                        self.heater.heat(int(self.params['cycle_time']), current_power)
+                else:
+                    current_power = randint(0, 50)
+                    self.emit_current_temperature(current_temperature)
+                    self.emit_current_power(current_power)
+                    self.heater.heat(int(self.params['cycle_time']), current_power)
+
             elif self.mode == 'manual':
                 pass
             else:
@@ -144,8 +208,7 @@ class TemperatureController(threading.Thread):
         pass
     def fulsh_csv_file():
         pass
-    def stop_recipe():
-        pass
+
     def stop(self):
         print "PIDController was stopped!"
         self.set_mode('off')

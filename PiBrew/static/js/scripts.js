@@ -76,13 +76,32 @@ $(document).ready(function(){
 
     socket.on('current_power', function(msg) {
         console.log("Received power: " + msg.power);
-		powerDisplay.setValue(msg.power)
+		powerDisplay.setValue(msg.power);
     });
 
 	$('#brew_button').on('click', function(event) {
 	  event.preventDefault(); // To prevent following the link (optional)
 	  socket.emit('brew_clicked')
 	});
+
+	socket.on('enable_continue_button', function(msg) {
+		console.log("I try to enable button")
+		$('#continue_button').prop('disabled', false);
+		socket.emit('button_enabled')
+    });
+
+	socket.on('disable_continue_button', function(msg) {
+		console.log("I try to disable button")
+		$('#continue_button').prop('disabled', true);
+		socket.emit('button_disabled')
+    });
+
+	$('#continue_button').on('click', function(event) {
+	  event.preventDefault(); // To prevent following the link (optional)
+	  socket.emit('continue_clicked')
+	});
+
+
 
 
 });

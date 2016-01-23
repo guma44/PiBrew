@@ -69,7 +69,9 @@ class Recipe(db.Document):
 @app.route('/')
 def index():
     #only by sending this page first will the client be connected to the socketio instance
-    return render_template('index.html')
+    recipes = list(Recipe.objects())
+    print recipes
+    return render_template('index.html', recipes=recipes)
 
 @socketio.on('connect', namespace='/test')
 def on_connect():
@@ -97,6 +99,11 @@ def on_connect():
                                                        heat_engine,
                                                        params)
         temperature_controller.start()
+    else:
+        if temperature_controller.recipe is not None:
+            if temperature_controller.recipe.button_enabled:
+                emit('enable_continue_button', namespace='/test')
+
 
 @socketio.on('disconnect', namespace='/test')
 def on_disconnect():
@@ -108,6 +115,22 @@ def brew_click():
     print "Brew clicked"
     recipe = Recipe.objects(name='test3').get()
     temperature_controller.start_recipe(recipe)
+
+@socketio.on('button_enabled', namespace='/test')
+def enable_continue_button():
+    global temperature_controller
+    temperature_controller.recipe.button_enabled = True
+
+@socketio.on('button_disabled', namespace='/test')
+def diable_continue_button():
+    global temperature_controller
+    if temperature_controller.recipe is not None:
+        temperature_controller.recipe.button_enabled = False
+
+@socketio.on('continue_clicked', namespace='/test')
+def continure_clicked():
+    global temperature_controller
+    temperature_controller.continue_clicked = True
 
 
 if __name__ == '__main__':

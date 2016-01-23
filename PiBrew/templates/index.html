@@ -16,7 +16,7 @@
 		<li><a href="#" name="tab3">Settings</a></li>
 	</ul>
 
-	<div class="raw" id='content'>
+	<div id='content'>
 		<div id="tab1">
 			<div>
 				<div class="row">
@@ -24,15 +24,47 @@
 					<canvas id="powerGauge" width="300" height="300"></canvas>
 				</div>
 				<div class="row">
-					<button id='brew_button' type="button" class="btn btn-default">Brew</button>
+					<button id='brew_button' type="button" class="btn btn-default">Brew recipe</button>
+				</div>
+				<div class="row">
+					<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
 				</div>
 			</div>
-		<div id="tab2"></div>
-		<div id="tab3">...</div>
-	</div>
-
-
+		</div>
+		<div id="tab2">
+			<div class='row'>
+<div class="col-md-12 table-responsive">
+<h4>Recipes</h4>
+<table id="pipeline_table" data-toggle="table" class="table table-striped" data-pagination="true" data-page-list="[50, 100, 1000, 2000]" data-smart-display=True data-page-size=50 data-search="true">
+  <thead>
+    <tr>
+		<th data-sortable="true">Name</th>
+		<th data-sortable="true">Create date</th>
+		<th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for recipe in recipes %}
+    <tr>
+		<td>{{ recipe.name }}</td>
+		<td>{{ recipe.created_at }}</td>
+		<td>
+		<a href="#" onclick="return confirm('Do you really want ro restart job {{ recipe.id }}?')"><span class="glyphicon glyphicon-repeat" aria-hidden="false" data-toggle="tooltip" data-placement="top"  title='RESTART. Sets the job status to "IDLE" and stops it if it is running.'></span></a>
+		<a href="#" onclick=""><span class="glyphicon glyphicon-refresh" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
+		<a href="#" onclick=""><span class="glyphicon glyphicon-remove" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
+		<a href="#" onclick=""><span class="glyphicon glyphicon-stop" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
+		<a href="#" onclick=""><span class="glyphicon glyphicon-trash" aria-hidden="true" data-toggle="tooltip" data-placement="top"  title=""></span></a>
+		</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 </div>
+			</div>
+		</div>
+		<div id="tab3">...</div>
+		</div>
+	</div>
 
 </body>
 </html>

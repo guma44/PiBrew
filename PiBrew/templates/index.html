@@ -40,7 +40,7 @@
 			<div class='row'>
 			<select id='recipe_select' class="selectpicker" title="Choose recipe" data-style="btn-info">
 			{% for recipe in recipes %}
-			<option value='{{ recipe.name }}'>{{ recipe.name }}</option>
+			<option value='{{ recipe.slug }}'>{{ recipe.name }}</option>
 			{% endfor %}
 			</select>
 			</div>

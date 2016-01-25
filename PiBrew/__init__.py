@@ -6,7 +6,7 @@ Aim is to create a webpage that is constantly updated with random numbers from a
 
 # Start with a basic flask app webpage.
 from flask.ext.socketio import SocketIO, emit
-from flask import Flask, render_template, url_for, copy_current_request_context, jsonify, g, request
+from flask import Flask, render_template, url_for, copy_current_request_context, jsonify, g, request, redirect
 from random import randint
 from time import sleep
 import os
@@ -72,6 +72,21 @@ def index():
     recipes = list(Recipe.objects())
     print recipes
     return render_template('index.html', recipes=recipes)
+
+@app.route('/show/<string:recipe_slug>', methods=("GET",))
+def show(recipe_slug):
+    print "I am in recipe detail"
+    recipe = Recipe.objects(slug=recipe_slug).get()
+    return render_template("recipe_details.html", recipe=recipe)
+
+@socketio.on('show_recipe', namespace='/test')
+def show_recipe(msg):
+    if msg['data']:
+        print "%s recipe selected" % msg['data']
+        print url_for('.show', recipe_slug=msg['data'])
+        return redirect(url_for('.show', recipe_slug=msg['data']))
+    else:
+        print "No recipe selected"
 
 @socketio.on('connect', namespace='/test')
 def on_connect():

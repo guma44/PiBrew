@@ -101,6 +101,12 @@ $(document).ready(function(){
 	  socket.emit('continue_clicked')
 	});
 
+	$('#show_recipe_button').on('click', function(event) {
+	  var e = document.getElementById('recipe_select');
+	  var item = e.options[e.selectedIndex].value;
+	  socket.emit('show_recipe', {data: item})
+	});
+
 
 
 

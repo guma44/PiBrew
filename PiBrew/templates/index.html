@@ -3,11 +3,16 @@
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+
+	<script type="text/javascript" src="static/js/bootstrap-select-1.9.4/bootstrap-select.min.js"></script>
+	<script type="text/javascript" src="static/js/bootstrap-select-1.9.4/i18n/defaults-*.js"></script>
+
 	<script type="text/javascript" src="static/js/gauge.js"></script>
     <script src="static/js/scripts.js"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href={{ url_for('static', filename="css/style.css")}}>
+    <link rel="stylesheet" href={{ url_for('static', filename="css/bootstrap-select-1.9.4/bootstrap-select.min.css")}}>
 </head>
 <body>
 	<ul id="tabs">
@@ -32,35 +37,26 @@
 			</div>
 		</div>
 		<div id="tab2">
+			<h3>Recipes</h3>
 			<div class='row'>
-<div class="col-md-12 table-responsive">
-<h4>Recipes</h4>
-<table id="pipeline_table" data-toggle="table" class="table table-striped" data-pagination="true" data-page-list="[50, 100, 1000, 2000]" data-smart-display=True data-page-size=50 data-search="true">
-  <thead>
-    <tr>
-		<th data-sortable="true">Name</th>
-		<th data-sortable="true">Create date</th>
-		<th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for recipe in recipes %}
-    <tr>
-		<td>{{ recipe.name }}</td>
-		<td>{{ recipe.created_at }}</td>
-		<td>
-		<a href="#" onclick="return confirm('Do you really want ro restart job {{ recipe.id }}?')"><span class="glyphicon glyphicon-repeat" aria-hidden="false" data-toggle="tooltip" data-placement="top"  title='RESTART. Sets the job status to "IDLE" and stops it if it is running.'></span></a>
-		<a href="#" onclick=""><span class="glyphicon glyphicon-refresh" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
-		<a href="#" onclick=""><span class="glyphicon glyphicon-remove" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
-		<a href="#" onclick=""><span class="glyphicon glyphicon-stop" aria-hidden="true" data-toggle="tooltip" data-placement="top" title=''></span></a>
-		<a href="#" onclick=""><span class="glyphicon glyphicon-trash" aria-hidden="true" data-toggle="tooltip" data-placement="top"  title=""></span></a>
-		</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
+			<select id='recipe_select' class="selectpicker">
+			{% for recipe in recipes %}
+			<option value='{{ recipe.name }}'>{{ recipe.name }}</option>
+			{% endfor %}
+			</select>
 			</div>
+				<div class="row">
+					<button id='show_recipe_button' type="button" class="btn btn-primary" style="width:150px">Show</button>
+					<button id='edit_recipe_button' type="button" class="btn btn-primary" style="width:150px">Edit</button>
+				</div>
+				<div class="row">
+					<button id='add_recipe_button' type="button" class="btn btn-primary" style="width:150px">Add</button>
+					<button id='delete_recipe_button' type="button" class="btn btn-warning" style="width:150px">Delete</button>
+				</div>
+				<div class="row">
+					<button id='brew_recipe_button' type="button" class="btn btn-success" style="width:150px">Start brewing</button>
+					<button id='stop_recipe_button' type="button" class="btn btn-danger" style="width:150px">Stop brewing</button>
+				</div>
 		</div>
 		<div id="tab3">...</div>
 		</div>

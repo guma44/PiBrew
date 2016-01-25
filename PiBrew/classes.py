@@ -1,13 +1,16 @@
 import threading
 from flask.ext.socketio import emit
 import time
-from random import randint
+import random
 # import RPi.GPIO as GPIO
+#
+global temp_for_sensor
+temp_for_sensor = 20.0
 
 class Sensor:
     "Class implementing temperature sensor"
     def read_temperature(self):
-        return randint(0, 99)
+        return round(random.uniform(temp_for_sensor - 0.5, temp_for_sensor + 0.5), 2)
 
 class Timer:
     def __init__(self):
@@ -73,8 +76,24 @@ class Heater:
     #         GPIO.output(pin_number, 0)
     #         time.sleep(off_time)
     def heat(self, cycle_time, duty_cycle):
-        print "Heating..."
-        time.sleep(cycle_time)
+        global temp_for_sensor
+        if duty_cycle == 0:
+            print "No heating"
+            time.sleep(cycle_time)
+        elif duty_cycle == 100:
+            print "Heating 100%"
+            if temp_for_sensor <= 100:
+                temp_for_sensor += 2
+            else:
+                temp_for_sensor = 100.0
+            time.sleep(cycle_time)
+        else:
+            print "Heating"
+            if temp_for_sensor <= 100:
+                temp_for_sensor += 2
+            else:
+                temp_for_sensor = 100.0
+            time.sleep(cycle_time)
 
     def get_on_off_time(self, ct, dt):
         power = duty_cycle/100.0 # duty is in percent
@@ -144,18 +163,18 @@ class TemperatureController(threading.Thread):
         self.disable_continue_button()
 
     def run(self):
-        step_start_time = None
         while not self.is_stopped():
             current_temperature = self.sensor.read_temperature()
             if self.mode == 'recipe':
                 temp_reached = current_temperature >= self.recipe.current_step.temperature
                 print "Step name", self.recipe.current_step.name
                 if temp_reached and not self.recipe.step_timer.is_on():
+                    print "Starting timer for", self.recipe.current_step.name
                     self.recipe.step_timer.start()
                 if self.recipe.step_timer.is_on():
                     if self.recipe.step_timer.elapsed() >= self.recipe.current_step.span and self.recipe.current_step.span > -1:
                         is_next_step = self.recipe.next_step()
-                        print "reached span"
+                        print "%s time out" % self.recipe.current_step.name
                         if not is_next_step:
                             self.stop_recipe()
                     elif self.recipe.current_step.span <= -1:
@@ -174,7 +193,7 @@ class TemperatureController(threading.Thread):
                                 self.enable_continue_button()
                             #TODO this is just for thest
                             print "Im in -1"
-                            current_power = randint(0, 50)
+                            current_power = 0
                             self.emit_current_temperature(current_temperature)
                             self.emit_current_power(current_power)
                             self.heater.heat(int(self.params['cycle_time']), current_power)
@@ -182,12 +201,13 @@ class TemperatureController(threading.Thread):
 
                     else:
                         #TODO this is just for thest
-                        current_power = randint(0, 50)
+                        print "%s %s elapsed" % (self.recipe.current_step.name, self.recipe.step_timer.elapsed())
+                        current_power = 0
                         self.emit_current_temperature(current_temperature)
                         self.emit_current_power(current_power)
                         self.heater.heat(int(self.params['cycle_time']), current_power)
                 else:
-                    current_power = randint(0, 50)
+                    current_power = 100
                     self.emit_current_temperature(current_temperature)
                     self.emit_current_power(current_power)
                     self.heater.heat(int(self.params['cycle_time']), current_power)
@@ -195,7 +215,7 @@ class TemperatureController(threading.Thread):
             elif self.mode == 'manual':
                 pass
             else:
-                current_power = randint(0, 50)
+                current_power = 0
                 self.emit_current_temperature(current_temperature)
                 self.emit_current_power(current_power)
                 self.heater.heat(int(self.params['cycle_time']), current_power)

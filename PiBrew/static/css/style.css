@@ -65,3 +65,11 @@
   border-radius: 0 5px 5px 5px;
   box-shadow: 0 -2px 3px -2px rgba(0, 0, 0, .5);
 }
+
+.row{
+    margin-top: 10px;
+	margin-bottom: 10px;
+	margin-right: 10px;
+	margin-left: 10px;
+
+}

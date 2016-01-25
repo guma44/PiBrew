@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block scripts %}
+	<script src="static/js/recipes.js"></script>
+{% endblock %}
+{% block content %}
+<div id='recipes_page'>
+	<select id="recipe_select" class="selectpicker" title='Choose recipe' data-style='btn-info'>
+		{% for recipe in recipes %}
+			<option value='{{ recipe.slug }}'>{{ recipe.name }}</option>
+		{% endfor %}
+	</select>
+	<div id="button_rows">
+		<div class="row">
+			<button id='show_recipe_button' type="button" class="btn btn-primary" style="width:150px">Show</button>
+			<button id='edit_recipe_button' type="button" class="btn btn-primary" style="width:150px">Edit</button>
+		</div>
+		<div class="row">
+			<button id='add_recipe_button' type="button" class="btn btn-primary" style="width:150px">Add</button>
+			<button id='delete_recipe_button' type="button" class="btn btn-warning" style="width:150px">Delete</button>
+		</div>
+		<div class="row">
+			<button id='brew_recipe_button' type="button" class="btn btn-success" style="width:150px">Start brewing</button>
+			<button id='stop_recipe_button' type="button" class="btn btn-danger" style="width:150px">Stop brewing</button>
+		</div>
+	</div>
+</div>
+{% endblock %}
+

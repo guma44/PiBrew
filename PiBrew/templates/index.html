@@ -1,65 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
-	<script type="text/javascript" src="static/js/bootstrap-select-1.9.4/bootstrap-select.min.js"></script>
-
-	<script type="text/javascript" src="static/js/gauge.js"></script>
-	<script type="text/javascript" src="static/js/dropdown.js"></script>
-    <script src="static/js/scripts.js"></script>
-
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href={{ url_for('static', filename="css/style.css")}}>
-    <link rel="stylesheet" href={{ url_for('static', filename="css/bootstrap-select-1.9.4/bootstrap-select.min.css")}}>
-</head>
-<body>
-	<ul id="tabs">
-		<li><a href="#" name="tab1">Dashboard</a></li>
-		<li><a href="#" name="tab2">Recipes</a></li>
-		<li><a href="#" name="tab3">Settings</a></li>
-	</ul>
-
-	<div id='content'>
-		<div id="tab1">
-			<div>
-				<div class="row">
-					<canvas id="tempGauge" width="300" height="300"></canvas>
-					<canvas id="powerGauge" width="300" height="300"></canvas>
-				</div>
-				<div class="row">
-					<button id='brew_button' type="button" class="btn btn-default">Brew recipe</button>
-				</div>
-				<div class="row">
-					<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
-				</div>
-			</div>
+{% extends "base.html" %}
+{% block scripts %}
+	<script src="static/js/index.js"></script>
+{% endblock %}
+{% block content %}
+	<div id="status_page">
+		<div class="row">
+				<canvas id="tempGauge" width="300" height="300"></canvas>
+				<canvas id="powerGauge" width="300" height="300"></canvas>
 		</div>
-		<div id="tab2">
-			<h3>Recipes</h3>
-			<div class='row'>
-			<select id='recipe_select' class="selectpicker" title="Choose recipe" data-style="btn-info">
-			{% for recipe in recipes %}
-			<option value='{{ recipe.slug }}'>{{ recipe.name }}</option>
-			{% endfor %}
-			</select>
-			</div>
-				<div class="row">
-					<button id='show_recipe_button' type="button" class="btn btn-primary" style="width:150px">Show</button>
-					<button id='edit_recipe_button' type="button" class="btn btn-primary" style="width:150px">Edit</button>
-				</div>
-				<div class="row">
-					<button id='add_recipe_button' type="button" class="btn btn-primary" style="width:150px">Add</button>
-					<button id='delete_recipe_button' type="button" class="btn btn-warning" style="width:150px">Delete</button>
-				</div>
-				<div class="row">
-					<button id='brew_recipe_button' type="button" class="btn btn-success" style="width:150px">Start brewing</button>
-					<button id='stop_recipe_button' type="button" class="btn btn-danger" style="width:150px">Stop brewing</button>
-				</div>
+		<div class="row">
+			<button id='brew_button' type="button" class="btn btn-default">Brew recipe</button>
 		</div>
-		<div id="tab3">...</div>
+		<div class="row">
+			<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
 		</div>
 	</div>
+{% endblock %}
 
-</body>
-</html>

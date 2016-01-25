@@ -13,6 +13,7 @@ import os
 from configobj import ConfigObj
 from threading import Thread, Event
 from flask.ext.mongoengine import MongoEngine
+from flask.ext.mongoengine.wtf import model_form
 from classes import TemperatureController, Heater, Sensor, PID
 import datetime
 
@@ -69,17 +70,25 @@ class Recipe(db.Document):
 @app.route('/')
 def index():
     #only by sending this page first will the client be connected to the socketio instance
-    recipes = list(Recipe.objects())
-    print recipes
-    return render_template('index.html', recipes=recipes)
+    return render_template('index.html')
 
-@app.route('/show/<string:recipe_slug>', methods=("GET",))
+@app.route('/recipes')
+def recipes():
+    #only by sending this page first will the client be connected to the socketio instance
+    recipes = list(Recipe.objects())
+    return render_template('recipes.html', recipes=recipes)
+
+@app.route('/settings')
+def settings():
+    return "No settings yet"
+
+@app.route('/show/<string:recipe_slug>', methods=("GET", 'POST'))
 def show(recipe_slug):
     print "I am in recipe detail"
     recipe = Recipe.objects(slug=recipe_slug).get()
     return render_template("recipe_details.html", recipe=recipe)
 
-@socketio.on('show_recipe', namespace='/test')
+@socketio.on('show_recipe', namespace='/recipes')
 def show_recipe(msg):
     if msg['data']:
         print "%s recipe selected" % msg['data']
@@ -87,6 +96,15 @@ def show_recipe(msg):
         return redirect(url_for('.show', recipe_slug=msg['data']))
     else:
         print "No recipe selected"
+
+@app.route('/new', methods=('GET', 'POST'))
+def new_recipe():
+    if request.method == 'POST':
+        pass
+    else:
+        form = model_form(Recipe, exclude=('created_at'))(request.form)
+        return render_template('new.html', form=form)
+
 
 @socketio.on('connect', namespace='/test')
 def on_connect():

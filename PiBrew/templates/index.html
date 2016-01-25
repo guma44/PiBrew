@@ -3,11 +3,10 @@
 <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
-
 	<script type="text/javascript" src="static/js/bootstrap-select-1.9.4/bootstrap-select.min.js"></script>
-	<script type="text/javascript" src="static/js/bootstrap-select-1.9.4/i18n/defaults-*.js"></script>
 
 	<script type="text/javascript" src="static/js/gauge.js"></script>
+	<script type="text/javascript" src="static/js/dropdown.js"></script>
     <script src="static/js/scripts.js"></script>
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -39,7 +38,7 @@
 		<div id="tab2">
 			<h3>Recipes</h3>
 			<div class='row'>
-			<select id='recipe_select' class="selectpicker">
+			<select id='recipe_select' class="selectpicker" title="Choose recipe" data-style="btn-info">
 			{% for recipe in recipes %}
 			<option value='{{ recipe.name }}'>{{ recipe.name }}</option>
 			{% endfor %}

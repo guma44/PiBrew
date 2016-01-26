@@ -55,18 +55,29 @@ $(document).ready(function(){
     //receive details from server
     socket.on('current_temperature', function(msg) {
         console.log("Received temperature: " + msg.temperature);
-		temperatureDisplay.setValue(msg.temperature)
+		temperatureDisplay.setValue(msg.temperature);
+		$("#temp_status").attr("placeholder", msg.temperature);
     });
 
     socket.on('current_power', function(msg) {
         console.log("Received power: " + msg.power);
 		powerDisplay.setValue(msg.power);
+		$("#power_status").attr("placeholder", msg.power);
     });
 
-	$('#brew_button').on('click', function(event) {
-	  event.preventDefault(); // To prevent following the link (optional)
-	  socket.emit('brew_clicked')
-	});
+    socket.on('current_step', function(msg) {
+		$("#current_step").attr("placeholder", msg.step);
+		$("#set_temperature").attr("placeholder", msg.set_temp);
+    });
+
+    socket.on('current_recipe', function(msg) {
+		$("#current_recipe").attr("placeholder", msg.recipe);
+    });
+
+    socket.on('remaining_time', function(msg) {
+		$("#remaining_time").attr("placeholder", msg.remaining_time);
+    });
+
 
 	socket.on('enable_continue_button', function(msg) {
 		console.log("I try to enable button")

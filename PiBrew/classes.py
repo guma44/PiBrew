@@ -124,13 +124,22 @@ class TemperatureController(threading.Thread):
     def emit_current_power(self, power):
         self.socketio.emit('current_power', {'power': power}, namespace=self.namespace)
 
-    def emit_current_action(self, action):
-        self.socketio.emit('current_action', {'action': action}, namespace=self.namespace)
+    def emit_current_step(self, step):
+        if step == "None":
+            self.socketio.emit('current_step', {'step': "None", 'set_temp': "None"}, namespace=self.namespace)
+        else:
+            self.socketio.emit('current_step', {'step': step.name, 'set_temp': step.temperature}, namespace=self.namespace)
+
+    def emit_current_recipe(self, recipe):
+        self.socketio.emit('current_recipe', {'recipe': recipe}, namespace=self.namespace)
 
     def emit_remaining_time(self, t):
-        mins, secs = divmod(t, 60)
-        timeformat = '{:02d}:{:02d}'.format(mins, secs)
-        self.socketio.emit('remaining_time', {'remaining_time': timeformat}, namespace=self.namespace)
+        if t <= -1:
+            self.socketio.emit('remaining_time', {'remaining_time': 'Waiting for input...'}, namespace=self.namespace)
+        else:
+            mins, secs = divmod(t, 60)
+            timeformat = '{:02d}:{:02d}'.format(int(mins), int(secs))
+            self.socketio.emit('remaining_time', {'remaining_time': timeformat}, namespace=self.namespace)
 
     def enable_continue_button(self):
         self.socketio.emit('enable_continue_button', namespace=self.namespace)
@@ -161,11 +170,16 @@ class TemperatureController(threading.Thread):
         self.set_mode('off')
         self.continue_clicked = False
         self.disable_continue_button()
+        self.emit_current_recipe("None")
+        self.emit_current_step("None")
+        self.socketio.emit('remaining_time', {'remaining_time': "None"}, namespace=self.namespace)
 
     def run(self):
         while not self.is_stopped():
             current_temperature = self.sensor.read_temperature()
             if self.mode == 'recipe':
+                self.emit_current_recipe(self.recipe.recipe.name)
+                self.emit_current_step(self.recipe.current_step)
                 temp_reached = current_temperature >= self.recipe.current_step.temperature
                 print "Step name", self.recipe.current_step.name
                 if temp_reached and not self.recipe.step_timer.is_on():
@@ -196,6 +210,7 @@ class TemperatureController(threading.Thread):
                             current_power = 0
                             self.emit_current_temperature(current_temperature)
                             self.emit_current_power(current_power)
+                            self.emit_remaining_time(-1)
                             self.heater.heat(int(self.params['cycle_time']), current_power)
 
 
@@ -205,11 +220,13 @@ class TemperatureController(threading.Thread):
                         current_power = 0
                         self.emit_current_temperature(current_temperature)
                         self.emit_current_power(current_power)
+                        self.emit_remaining_time((60*self.recipe.current_step.span) - self.recipe.step_timer.elapsed(how='seconds'))
                         self.heater.heat(int(self.params['cycle_time']), current_power)
                 else:
                     current_power = 100
                     self.emit_current_temperature(current_temperature)
                     self.emit_current_power(current_power)
+                    self.socketio.emit('remaining_time', {'remaining_time': "Waiting for temperature..."}, namespace=self.namespace)
                     self.heater.heat(int(self.params['cycle_time']), current_power)
 
             elif self.mode == 'manual':

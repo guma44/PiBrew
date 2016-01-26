@@ -50,8 +50,8 @@ class Step(db.EmbeddedDocument):
 
 class Recipe(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
-    name = db.StringField(max_length=255, required=True)
-    slug = db.StringField(max_length=255, required=True)
+    name = db.StringField(max_length=255, required=True, unique=True)
+    slug = db.StringField(max_length=255, required=True, unique=True)
     steps = db.ListField(db.EmbeddedDocumentField('Step'))
 
     def get_absolute_url(self):
@@ -88,6 +88,13 @@ def show(recipe_slug):
     recipe = Recipe.objects(slug=recipe_slug).get()
     return render_template("recipe_details.html", recipe=recipe)
 
+@app.route('/brew/<string:recipe_slug>', methods=("GET",))
+def brew(recipe_slug):
+    global temperature_controller
+    recipe = Recipe.objects(slug=recipe_slug).get()
+    temperature_controller.start_recipe(recipe)
+    return redirect(url_for('index'))
+
 @socketio.on('show_recipe', namespace='/recipes')
 def show_recipe(msg):
     if msg['data']:
@@ -97,13 +104,31 @@ def show_recipe(msg):
     else:
         print "No recipe selected"
 
+@app.route('/delete/<string:recipe_slug>', methods=("GET", 'POST'))
+def delete(recipe_slug):
+    print "I am in recipe delete"
+    recipe = Recipe.objects(slug=recipe_slug).get()
+    recipe.delete()
+    return redirect(url_for('recipes'))
+
 @app.route('/new', methods=('GET', 'POST'))
 def new_recipe():
     if request.method == 'POST':
-        pass
+        step_names = request.form.getlist('step_name')
+        step_times = request.form.getlist('step_time')
+        step_temps = request.form.getlist('step_temp')
+        steps = []
+        for name, time, temp in zip(step_names, step_times, step_temps):
+            steps.append(Step(name=name, span=int(time), temperature=int(temp)))
+        recipe = Recipe(name=request.form.get('recipe_name'),
+                        slug=request.form.get('recipe_name'),
+                        steps=steps)
+        recipe.save()
+        return redirect(url_for('recipes'))
     else:
         form = model_form(Recipe, exclude=('created_at'))(request.form)
         return render_template('new.html', form=form)
+
 
 
 @socketio.on('connect', namespace='/test')
@@ -145,7 +170,6 @@ def on_disconnect():
 @socketio.on('brew_clicked', namespace='/test')
 def brew_click():
     global temperature_controller
-    print "Brew clicked"
     recipe = Recipe.objects(name='test3').get()
     temperature_controller.start_recipe(recipe)
 

@@ -5,14 +5,65 @@
 {% block content %}
 	<div id="status_page">
 		<div class="row">
-				<canvas id="tempGauge" width="300" height="300"></canvas>
-				<canvas id="powerGauge" width="300" height="300"></canvas>
+				<canvas id="tempGauge" width="150" height="150"></canvas>
+				<canvas id="powerGauge" width="150" height="150"></canvas>
 		</div>
-		<div class="row">
-			<button id='brew_button' type="button" class="btn btn-default">Brew recipe</button>
+	<form action="new" method="POST" accept-charset="utf-8">
+	</form>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Temperature</label>
+			</div>
+			<div class="input-group col-sm-1">
+				<input id='temp_status' name="recipe_name" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				<span class="input-group-addon">°C</span>
+			</div>
 		</div>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Power</label>
+			</div>
+			<div class="input-group col-sm-1">
+				<input id="power_status" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				<span class="input-group-addon">%</span>
+			</div>
+		</div>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Recipe</label>
+			</div>
+			<div class="input-group col-sm-2">
+				<input id="current_recipe" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+			</div>
+		</div>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Step</label>
+			</div>
+			<div class="input-group col-sm-2">
+				<input id="current_step" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+			</div>
+		</div>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Target temp.</label>
+			</div>
+			<div class="input-group col-sm-1">
+				<input id="set_temperature" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				<span class="input-group-addon">°C</span>
+			</div>
+		</div>
+		<div class="form-group row">
+			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Remaining time</label>
+			</div>
+			<div class="input-group col-sm-2">
+				<input id="remaining_time" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				<span class="input-group-addon">min</span>
+			</div>
 		<div class="row">
 			<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
+		</div>
 		</div>
 	</div>
 {% endblock %}

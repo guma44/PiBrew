@@ -3,6 +3,54 @@
 	<script src="static/js/recipes.js"></script>
 {% endblock %}
 {% block content %}
+<form action="new_recipe" method="POST" accept-charset="utf-8">
+	<fieldset >
+		<div class="form-group">
+			<label class="col-sm-1 control-label" for="textinput">Recipe name</label>
+			<div class="col-sm-3">
+				<input id="textinput" name="textinput" type="text" placeholder="Name of the recipe" class="form-control input-md">
+			</div>
+		</div>
+	</fieldset>
+	<fieldset >
+		<legend>Steps</legend>
+
+    <div class="row">
+		<div class="col-md-1">
+			<p id="step_number">Step 1</p>
+		</div>
+        <div class="col-md-2">
+            <div class="form-group">
+				<label class="control-label" for="date_deb">Step name</label>
+				<input id="step_name" name="textinput" type="text" placeholder="Name of the step" class="form-control input-md">
+          </div>
+        </div>
+        <div class="col-md-1">
+            <div class="form-group">
+				<label class="control-label" for="date_deb">Time</label>
+				<div class="input-group">
+					<input id="step_name" name="textinput" type="text" placeholder="Time" class="form-control input-md">
+					<span class="input-group-addon">min</span>
+				</div>
+          </div>
+        </div>
+        <div class="col-md-1">
+            <div class="form-group">
+				<label class="control-label" for="date_deb">Temperature</label>
+				<div class="input-group">
+					<input id="step_name" name="textinput" type="text" placeholder="Temp" class="form-control input-md">
+					<span class="input-group-addon">°C</span>
+				</div>
+          </div>
+        </div>
+    </div>
+
+
+	</fieldset>
+	<div id="save_button_div" class="form-group">
+		<button type="submit" class="btn btn-success">Save</button>
+	</div>
+</form>
 
 {% endblock %}
 

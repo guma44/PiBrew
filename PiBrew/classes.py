@@ -134,7 +134,7 @@ class TemperatureController(threading.Thread):
         self.socketio.emit('current_recipe', {'recipe': recipe}, namespace=self.namespace)
 
     def emit_remaining_time(self, t):
-        if t <= -1:
+        if t <= 0:
             self.socketio.emit('remaining_time', {'remaining_time': 'Waiting for input...'}, namespace=self.namespace)
         else:
             mins, secs = divmod(t, 60)
@@ -186,12 +186,12 @@ class TemperatureController(threading.Thread):
                     print "Starting timer for", self.recipe.current_step.name
                     self.recipe.step_timer.start()
                 if self.recipe.step_timer.is_on():
-                    if self.recipe.step_timer.elapsed() >= self.recipe.current_step.span and self.recipe.current_step.span > -1:
+                    if self.recipe.step_timer.elapsed() >= self.recipe.current_step.span and self.recipe.current_step.span > 0:
                         is_next_step = self.recipe.next_step()
                         print "%s time out" % self.recipe.current_step.name
                         if not is_next_step:
                             self.stop_recipe()
-                    elif self.recipe.current_step.span <= -1:
+                    elif self.recipe.current_step.span <= 0:
                         if self.continue_clicked:
                             is_next_step = self.recipe.next_step()
                             print "continue_is_clicked"

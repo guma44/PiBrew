@@ -3,68 +3,80 @@
 	<script src="static/js/index.js"></script>
 {% endblock %}
 {% block content %}
-	<div id="status_page">
+<ul id="tabs">
+    <li><a href="#" name="tab1">Status</a></li>
+    <li><a href="#" name="tab2">Gauges</a></li>
+    <li><a href="#" name="tab3">Plots</a></li>
+</ul>
+
+<div id="content">
+    <div id="tab1">
+		<form>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Temperature</label>
+				</div>
+				<div class="input-group col-sm-1">
+					<input id='temp_status' name="recipe_name" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+					<span class="input-group-addon">°C</span>
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Power</label>
+				</div>
+				<div class="input-group col-sm-1">
+					<input id="power_status" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+					<span class="input-group-addon">%</span>
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Recipe</label>
+				</div>
+				<div class="input-group col-sm-2">
+					<input id="current_recipe" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Step</label>
+				</div>
+				<div class="input-group col-sm-2">
+					<input id="current_step" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Target temp.</label>
+				</div>
+				<div class="input-group col-sm-1">
+					<input id="set_temperature" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+					<span class="input-group-addon">°C</span>
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-sm-1">
+					<label class="control-label" for="textinput">Remaining time</label>
+				</div>
+				<div class="input-group col-sm-2">
+					<input id="remaining_time" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
+					<span class="input-group-addon">min</span>
+				</div>
+			</div>
+			<div class="row">
+				<a href="{{ url_for('stop') }}"><button id='stop_button' type="button" class="btn btn-danger">Stop</button></a>
+				<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
+			</div>
+		<form>
+	</div>
+    <div id="tab2">
 		<div class="row">
-				<canvas id="tempGauge" width="150" height="150"></canvas>
-				<canvas id="powerGauge" width="150" height="150"></canvas>
-		</div>
-	<form action="new" method="POST" accept-charset="utf-8">
-	</form>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Temperature</label>
-			</div>
-			<div class="input-group col-sm-1">
-				<input id='temp_status' name="recipe_name" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-				<span class="input-group-addon">°C</span>
-			</div>
-		</div>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Power</label>
-			</div>
-			<div class="input-group col-sm-1">
-				<input id="power_status" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-				<span class="input-group-addon">%</span>
-			</div>
-		</div>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Recipe</label>
-			</div>
-			<div class="input-group col-sm-2">
-				<input id="current_recipe" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-			</div>
-		</div>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Step</label>
-			</div>
-			<div class="input-group col-sm-2">
-				<input id="current_step" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-			</div>
-		</div>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Target temp.</label>
-			</div>
-			<div class="input-group col-sm-1">
-				<input id="set_temperature" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-				<span class="input-group-addon">°C</span>
-			</div>
-		</div>
-		<div class="form-group row">
-			<div class="col-sm-1">
-				<label class="control-label" for="textinput">Remaining time</label>
-			</div>
-			<div class="input-group col-sm-2">
-				<input id="remaining_time" type="text" placeholder="None" class="form-control input-md" readonly="readonly">
-				<span class="input-group-addon">min</span>
-			</div>
-		<div class="row">
-			<button id='continue_button' type="button" class="btn btn-primary" disabled>Continue</button>
-		</div>
+				<canvas id="tempGauge" width="200" height="200"></canvas>
+				<canvas id="powerGauge" width="200" height="200"></canvas>
 		</div>
 	</div>
+    <div id="tab3">No Plots yet</div>
+</div>
 {% endblock %}
 

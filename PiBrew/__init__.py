@@ -43,7 +43,7 @@ class Step(db.EmbeddedDocument):
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
     name = db.StringField(max_length=255, required=True)
     span = db.IntField(required=True)
-    temperature = db.FloatField(required=True)
+    temperature = db.IntField(required=True)
 
     def __unicode__(self):
         return self.name
@@ -141,6 +141,9 @@ def edit_recipe(recipe_slug):
         recipe = Recipe(name=request.form.get('recipe_name'),
                         slug=request.form.get('recipe_name').lower().replace(" ", "_"),
                         steps=steps)
+        print Recipe.objects()
+        old_recipe = Recipe.objects(slug=recipe_slug).get()
+        old_recipe.delete()
         recipe.save()
         return redirect(url_for('recipes'))
     else:
@@ -190,13 +193,19 @@ def brew_click():
     recipe = Recipe.objects(name='test3').get()
     temperature_controller.start_recipe(recipe)
 
+@app.route('/stop', methods=("GET",))
+def stop():
+    global temperature_controller
+    temperature_controller.stop_recipe()
+    return redirect(url_for('index'))
+
 @socketio.on('button_enabled', namespace='/test')
 def enable_continue_button():
     global temperature_controller
     temperature_controller.recipe.button_enabled = True
 
 @socketio.on('button_disabled', namespace='/test')
-def diable_continue_button():
+def disable_continue_button():
     global temperature_controller
     if temperature_controller.recipe is not None:
         temperature_controller.recipe.button_enabled = False

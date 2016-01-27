@@ -121,7 +121,7 @@ def new_recipe():
         for name, time, temp in zip(step_names, step_times, step_temps):
             steps.append(Step(name=name, span=int(time), temperature=int(temp)))
         recipe = Recipe(name=request.form.get('recipe_name'),
-                        slug=request.form.get('recipe_name'),
+                        slug=request.form.get('recipe_name').lower().replace(" ", "_"),
                         steps=steps)
         recipe.save()
         return redirect(url_for('recipes'))
@@ -129,6 +129,23 @@ def new_recipe():
         form = model_form(Recipe, exclude=('created_at'))(request.form)
         return render_template('new.html', form=form)
 
+@app.route('/edit/<string:recipe_slug>', methods=('GET', 'POST'))
+def edit_recipe(recipe_slug):
+    if request.method == 'POST':
+        step_names = request.form.getlist('step_name')
+        step_times = request.form.getlist('step_time')
+        step_temps = request.form.getlist('step_temp')
+        steps = []
+        for name, time, temp in zip(step_names, step_times, step_temps):
+            steps.append(Step(name=name, span=int(time), temperature=int(temp)))
+        recipe = Recipe(name=request.form.get('recipe_name'),
+                        slug=request.form.get('recipe_name').lower().replace(" ", "_"),
+                        steps=steps)
+        recipe.save()
+        return redirect(url_for('recipes'))
+    else:
+        recipe = Recipe.objects(slug=recipe_slug).get()
+        return render_template('recipe_edit.html', recipe=recipe)
 
 
 @socketio.on('connect', namespace='/test')

@@ -22,14 +22,14 @@ $(document).ready(function(){
         '<div class="col-md-2">' +
             '<div class="form-group">' +
 				'<label class="control-label" for="date_deb">Step name</label>' +
-				'<input name="step_name" type="text" placeholder="Name of the step" class="form-control input-md">' +
+				'<input name="step_name" type="text" placeholder="Name of the step" class="form-control input-md" required>' +
           '</div>' +
         '</div>' +
         '<div class="col-md-1">' +
             '<div class="form-group">' +
 				'<label class="control-label" for="date_deb">Time</label>' +
 				'<div class="input-group">' +
-					'<input name="step_time" type="text" placeholder="Time" class="form-control input-md">' +
+					'<input name="step_time" type="number" placeholder="Time" class="form-control input-md" required>' +
 					'<span class="input-group-addon">min</span>' +
 				'</div>' +
           '</div>' +
@@ -38,7 +38,7 @@ $(document).ready(function(){
             '<div class="form-group">' +
 				'<label class="control-label" for="date_deb">Temperature</label>' +
 				'<div class="input-group">' +
-					'<input name="step_temp" type="text" placeholder="Temp" class="form-control input-md">' +
+					'<input name="step_temp" type="number" placeholder="Temp" class="form-control input-md" required>' +
 					'<span class="input-group-addon">°C</span>' +
 				'</div>' +
           '</div>' +

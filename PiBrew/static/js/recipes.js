@@ -48,6 +48,17 @@ $(document).ready(function(){
 	  };
 	});
 
+	$('#edit_recipe_button').on('click', function(event) {
+		console.log("Edit button")
+	  event.preventDefault(); // To prevent following the link (optional)
+	  var e = document.getElementById('recipe_select');
+	  var item = e.options[e.selectedIndex].value;
+	  if (item != ''){
+		  var loc = 'http://' + document.domain + ':' + location.port + '/edit/' + item
+		  window.location.href = loc
+	  };
+	});
+
 
 
 

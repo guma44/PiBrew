@@ -5,13 +5,16 @@
 		<div class="form-group">
 			<label class="col-sm-1 control-label" for="textinput">Recipe name</label>
 			<div class="col-sm-3">
-				<input name="recipe_name" type="text" placeholder="{{ recipe.name }}" class="form-control input-md" required readonly="readonly">
+				<input name="recipe_name" type="text" placeholder="{{ recipe.name }}" class="form-control input-md" readonly="readonly">
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 	</fieldset>
 	<fieldset id='steps_fieldset'>
 		<legend>Steps</legend>
+		<div class='row'>
+			<button type='button' id="add_step_button" class="btn btn-primary">Add step</button>
+		</div>
 	{% for step in recipe.steps %}
 
     <div id='step1_raw' class="row">
@@ -21,14 +24,14 @@
         <div class="col-md-2">
             <div class="form-group">
 				<label class="control-label" for="date_deb">Step name</label>
-				<input name="step_name" type="text" placeholder="{{ step.name }}" class="form-control input-md" required readonly="readonly">
+				<input name="step_name" type="text" placeholder="{{ step.name }}" class="form-control input-md" required>
           </div>
         </div>
         <div class="col-md-1">
             <div class="form-group">
 				<label class="control-label" for="date_deb">Time</label>
 				<div class="input-group">
-					<input name="step_time" type="text" placeholder="{{ step.span }}" class="form-control input-md" required readonly="readonly">
+					<input name="step_time" type="number" placeholder="{{ step.span }}" class="form-control input-md" required>
 					<span class="input-group-addon">min</span>
 				</div>
           </div>
@@ -37,12 +40,21 @@
             <div class="form-group">
 				<label class="control-label" for="date_deb">Temperature</label>
 				<div class="input-group">
-					<input name="step_temp" type="text" placeholder="{{ step.temperature }}" class="form-control input-md" required readonly="readonly">
+					<input name="step_temp" type="number" placeholder="{{ step.temperature }}" class="form-control input-md" required>
 					<span class="input-group-addon">°C</span>
 				</div>
           </div>
         </div>
+		{% if loop.index > 1 %}
+			<div class="form-group">
+				<button type="button" id="delete_step_button" class="btn btn-xs btn-danger" onClick="$(\'#stepSTEPNUM_raw\').remove()"><span class="glyphicon glyphicon-remove"></span></button>
+			</div>
+		{% endif %}
     </div>
 	{% endfor %}
 	</fieldset>
+	<div id="save_button_div" class="form-group row">
+		<button type="submit" class="btn btn-success">Update</button>
+		<a href={{ url_for('recipes') }}><button type="button" class="btn btn-warning">Cancel</button></a>
+	</div>
 {% endblock %}

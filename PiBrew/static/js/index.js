@@ -24,9 +24,36 @@ $(document).ready(function(){
 	$("#status_menu").addClass('active')
 
     //connect to the socket server.
-	var namespace = '/test'
+	var data = [[]];
+	var namespace = '/test';
     var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
     var number = 0.0;
+
+	// Plotting
+	var options_temp = {
+		series: {
+            lines: { show: true },
+            points: { show: false }
+        },
+		axisLabels: {
+            show: true
+        },
+		yaxis: {
+			show: true,
+			min: 0,
+			max: 100,
+			autoscaleMargin: null,
+			axisLabel: "Temp [°C]",
+		},
+		xaxis: {
+			show: true,
+			min: 0,
+			max: 1,
+			autoscaleMargin: null,
+			axisLabel: "Time [min]",
+		}
+	};
+	// var plot_power = $.plot($("#plot_power"), data, options);
 
 	//draw gauge
 	var options_gauge_temperature = {
@@ -110,6 +137,38 @@ $(document).ready(function(){
 	  event.preventDefault(); // To prevent following the link (optional)
 	  socket.emit('continue_clicked')
 	});
+
+	socket.on('data_for_plot', function(msg) {
+		var data_tmp = [[]]
+		var max_tmp = 0.0;
+		console.log("I got the data");
+		console.log(msg);
+		for (var key in msg) {
+			data_tmp[0].push([parseFloat(key), parseFloat(msg[key].tem)]);
+			if (max_tmp <= parseFloat(msg[key])){
+				max_tmp = parseFloat(msg[key])
+			};
+		};
+		var max_time = data_tmp[0][data_tmp[0].length - 1][0];
+		options_temp.xaxis.max = max_time;
+		console.log(data_tmp)
+		data = data_tmp
+		$.plot($("#plot_temp"), data, options_temp);
+		// plot_temp.setData(data_tmp);
+		// plot_temp.draw();
+    });
+
+	socket.on('new_data_for_plot', function(msg) {
+		console.log("New data")
+		console.log(data[0].length);
+		console.log([parseFloat(msg.time), parseFloat(msg.temp)]);
+		data[0].push([parseFloat(msg.time), parseFloat(msg.temp)]);
+		console.log(data[0].length);
+		var max_time = parseFloat(msg.time);
+		options_temp.xaxis.max = max_time;
+		$.plot($("#plot_temp"), data, options_temp);
+    });
+
 
 
 });

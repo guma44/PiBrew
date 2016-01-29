@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+{% block scripts %}
+	<script type="text/javascript" src={{ url_for('static', filename="js/recipes.js")}}></script>
+	<script type="text/javascript" src={{ url_for('static', filename="js/new_recipe.js")}}></script>
+	<script type="text/javascript" src={{ url_for('static', filename="js/validator.js")}}></script>
+{% endblock %}
 {% block content %}
 <form action="{{ recipe.slug }}" method="POST" accept-charset="utf-8">
 	<fieldset >
@@ -19,7 +24,7 @@
 
 	<div id='step{{ loop.index }}_raw' class="row">
 		<div class="col-md-1">
-			<p id="step_number">Step {{ loop.index }}</p>
+			<p id="step_number">Step</p>
 		</div>
         <div class="col-md-2">
             <div class="form-group">

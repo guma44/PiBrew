@@ -181,6 +181,8 @@ def on_connect():
         if temperature_controller.recipe is not None:
             if temperature_controller.recipe.button_enabled:
                 emit('enable_continue_button', namespace='/test')
+            if temperature_controller.data is not None:
+                emit('data_for_plot', temperature_controller.data, namespace='/test')
 
 
 @socketio.on('disconnect', namespace='/test')

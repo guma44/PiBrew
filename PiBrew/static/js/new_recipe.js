@@ -17,7 +17,7 @@ $(document).ready(function(){
 	var step_count = 1;
 	var stepstring =     '<div id="stepSTEPNUM_raw" class="row">' +
 		'<div class="col-md-1">' +
-			'<p id="step_number">Step STEPNUM</p>' +
+			'<p id="step_number">Step</p>' +
 		'</div>' +
         '<div class="col-md-2">' +
             '<div class="form-group">' +
@@ -56,7 +56,6 @@ $(document).ready(function(){
 		var newstep = stepstring.replaceAll("STEPNUM", step_count.toString())
 		$('#steps_fieldset').append(newstep)
 	});
-
 
 
 });

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block scripts %}
-	<script src="static/js/index.js"></script>
+	<script type="text/javascript" src={{ url_for('static', filename="js/flot/jquery.flot.js")}}></script>
+	<script type="text/javascript" src={{ url_for('static', filename="js/flot/jquery.flot.axislabels.js")}}></script>
+	<script type="text/javascript" src={{ url_for('static', filename="js/index.js")}}></script>
 {% endblock %}
 {% block content %}
 <ul id="tabs">
@@ -76,7 +78,10 @@
 				<canvas id="powerGauge" width="200" height="200"></canvas>
 		</div>
 	</div>
-    <div id="tab3">No Plots yet</div>
+    <div id="tab3">
+		<div id="plot_temp" style="width:400px;height:150px"></div>
+		<div id="plot_power" style="width:400px;height:150px"></div>
+	</div>
 </div>
 {% endblock %}
 

@@ -161,11 +161,13 @@ class TemperatureController(threading.Thread):
         self.continue_clicked = True
 
     def start_recipe(self, recipe):
+        self.data = {}
         self.set_recipe(recipe)
         self.recipe.start()
         self.set_mode('recipe')
 
     def stop_recipe(self):
+        self.data = None
         self.recipe = None
         self.set_mode('off')
         self.continue_clicked = False
@@ -180,6 +182,9 @@ class TemperatureController(threading.Thread):
             if self.mode == 'recipe':
                 self.emit_current_recipe(self.recipe.recipe.name)
                 self.emit_current_step(self.recipe.current_step)
+                time_elapsed = str(self.recipe.timer.elapsed())
+                self.data[time_elapsed] = {'pow': str(100), 'tem': str(current_temperature)}
+                self.socketio.emit('new_data_for_plot', {'time': time_elapsed, 'temp': current_temperature}, namespace=self.namespace)
                 temp_reached = current_temperature >= self.recipe.current_step.temperature
                 print "Step name", self.recipe.current_step.name
                 if temp_reached and not self.recipe.step_timer.is_on():

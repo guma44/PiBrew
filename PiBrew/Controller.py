@@ -101,8 +101,11 @@ class Heater:
         off_time = cycle_time*(1.0 - power)
         return (on_time, off_time)
 
-# PIC controller class acting as a thread
+
 class TemperatureController(threading.Thread):
+    """Class implements temperature controller that runs in the
+    background.
+    """
 
     def __init__(self, socketio, sensor, pid, heater, params):
         super(TemperatureController, self).__init__()
@@ -178,14 +181,20 @@ class TemperatureController(threading.Thread):
 
     def run(self):
         while not self.is_stopped():
-            current_temperature = self.sensor.read_temperature()
+            self.current_temperature = self.sensor.read_temperature()
             if self.mode == 'recipe':
                 self.emit_current_recipe(self.recipe.recipe.name)
                 self.emit_current_step(self.recipe.current_step)
                 time_elapsed = str(self.recipe.timer.elapsed())
-                self.data[time_elapsed] = {'pow': str(100), 'tem': str(current_temperature)}
-                self.socketio.emit('new_data_for_plot', {'time': time_elapsed, 'temp': current_temperature}, namespace=self.namespace)
-                temp_reached = current_temperature >= self.recipe.current_step.temperature
+                self.data[time_elapsed] = {'power': str(self.current_power),
+                                           'temp': str(self.current_temperature),
+                                           'set_temp': str(self.recipe.current_step.temperature)}
+                self.socketio.emit('new_data_for_plot', {'time': time_elapsed,
+                                                         'temp': self.current_temperature,
+                                                         'power': self.current_power,
+                                                         'set_temp': str(self.recipe.current_step.temperature)},
+                                   namespace=self.namespace)
+                temp_reached = self.current_temperature >= self.recipe.current_step.temperature
                 print "Step name", self.recipe.current_step.name
                 if temp_reached and not self.recipe.step_timer.is_on():
                     print "Starting timer for", self.recipe.current_step.name
@@ -210,167 +219,44 @@ class TemperatureController(threading.Thread):
                             if not self.recipe.button_enabled:
                                 print "Button not enabled"
                                 self.enable_continue_button()
-                            #TODO this is just for thest
-                            print "Im in -1"
-                            current_power = 0
-                            self.emit_current_temperature(current_temperature)
-                            self.emit_current_power(current_power)
+                            self.current_power = self.pid.calcPID_reg4(self.current_temperature, self.recipe.current_step.temperature)
+                            self.emit_current_temperature(self.current_temperature)
+                            self.emit_current_power(self.current_power)
                             self.emit_remaining_time(-1)
-                            self.heater.heat(int(self.params['cycle_time']), current_power)
+                            # self.heater.heat(int(self.params['cycle_time']), self.current_power)
+                            self.heater.heat(int(self.params['cycle_time']), 0) # TODO
 
 
                     else:
-                        #TODO this is just for thest
-                        print "%s %s elapsed" % (self.recipe.current_step.name, self.recipe.step_timer.elapsed())
-                        current_power = 0
-                        self.emit_current_temperature(current_temperature)
-                        self.emit_current_power(current_power)
+                        self.current_power = self.pid.calcPID_reg4(self.current_temperature, self.recipe.current_step.temperature)
+                        self.emit_current_temperature(self.current_temperature)
+                        self.emit_current_power(self.current_power)
                         self.emit_remaining_time((60*self.recipe.current_step.span) - self.recipe.step_timer.elapsed(how='seconds'))
-                        self.heater.heat(int(self.params['cycle_time']), current_power)
+                        # self.heater.heat(int(self.params['cycle_time']), self.current_power)
+                        self.heater.heat(int(self.params['cycle_time']), 0) # TODO
                 else:
-                    current_power = 100
-                    self.emit_current_temperature(current_temperature)
-                    self.emit_current_power(current_power)
+                    self.current_power = self.pid.calcPID_reg4(self.current_temperature, self.recipe.current_step.temperature)
+                    self.emit_current_temperature(self.current_temperature)
+                    self.emit_current_power(self.current_power)
                     self.socketio.emit('remaining_time', {'remaining_time': "Waiting for temperature..."}, namespace=self.namespace)
-                    self.heater.heat(int(self.params['cycle_time']), current_power)
+                    # self.heater.heat(int(self.params['cycle_time']), self.current_power)
+                    self.heater.heat(int(self.params['cycle_time']), 100) # TODO
 
             elif self.mode == 'manual':
                 pass
             else:
-                current_power = 0
-                self.emit_current_temperature(current_temperature)
-                self.emit_current_power(current_power)
-                self.heater.heat(int(self.params['cycle_time']), current_power)
+                self.current_power = 0
+                self.emit_current_temperature(self.current_temperature)
+                self.emit_current_power(self.current_power)
+                self.heater.heat(int(self.params['cycle_time']), self.current_power)
 
-    def activate_recipe_step():
-        pass
     def log_temperature():
-        pass
-    def continue_clicked():
-        pass
-    def fulsh_csv_file():
         pass
 
     def stop(self):
         print "PIDController was stopped!"
         self.set_mode('off')
         self._stop.set()
+
     def is_stopped(self):
         return self._stop.isSet()
-
-
-class PID:
-    """PID implemented by steve71 at https://github.com/steve71/RasPiBrew/blob/master/RasPiBrew"""
-    ek_1 = 0.0  # e[k-1] = SP[k-1] - PV[k-1] = Tset_hlt[k-1] - Thlt[k-1]
-    ek_2 = 0.0  # e[k-2] = SP[k-2] - PV[k-2] = Tset_hlt[k-2] - Thlt[k-2]
-    xk_1 = 0.0  # PV[k-1] = Thlt[k-1]
-    xk_2 = 0.0  # PV[k-2] = Thlt[k-1]
-    yk_1 = 0.0  # y[k-1] = Gamma[k-1]
-    yk_2 = 0.0  # y[k-2] = Gamma[k-1]
-    lpf_1 = 0.0 # lpf[k-1] = LPF output[k-1]
-    lpf_2 = 0.0 # lpf[k-2] = LPF output[k-2]
-
-    yk = 0.0 # output
-
-    GMA_HLIM = 100.0
-    GMA_LLIM = 0.0
-
-    def __init__(self, ts, kc, ti, td):
-        self.kc = kc
-        self.ti = ti
-        self.td = td
-        self.ts = ts
-        self.k_lpf = 0.0
-        self.k0 = 0.0
-        self.k1 = 0.0
-        self.k2 = 0.0
-        self.k3 = 0.0
-        self.lpf1 = 0.0
-        self.lpf2 = 0.0
-        self.ts_ticks = 0
-        self.pid_model = 3
-        self.pp = 0.0
-        self.pi = 0.0
-        self.pd = 0.0
-        if (self.ti == 0.0):
-            self.k0 = 0.0
-        else:
-            self.k0 = self.kc * self.ts / self.ti
-        self.k1 = self.kc * self.td / self.ts
-        self.lpf1 = (2.0 * self.k_lpf - self.ts) / (2.0 * self.k_lpf + self.ts)
-        self.lpf2 = self.ts / (2.0 * self.k_lpf + self.ts) 
-
-    def calcPID_reg3(self, xk, tset, enable):
-        ek = 0.0
-        lpf = 0.0
-        ek = tset - xk # calculate e[k] = SP[k] - PV[k]
-        #--------------------------------------
-        # Calculate Lowpass Filter for D-term
-        #--------------------------------------
-        lpf = self.lpf1 * pidpy.lpf_1 + self.lpf2 * (ek + pidpy.ek_1);
-
-        if (enable):
-            #-----------------------------------------------------------
-            # Calculate PID controller:
-            # y[k] = y[k-1] + kc*(e[k] - e[k-1] +
-            # Ts*e[k]/Ti +
-            # Td/Ts*(lpf[k] - 2*lpf[k-1] + lpf[k-2]))
-            #-----------------------------------------------------------
-            self.pp = self.kc * (ek - pidpy.ek_1) # y[k] = y[k-1] + Kc*(PV[k-1] - PV[k])
-            self.pi = self.k0 * ek  # + Kc*Ts/Ti * e[k]
-            self.pd = self.k1 * (lpf - 2.0 * pidpy.lpf_1 + pidpy.lpf_2)
-            pidpy.yk += self.pp + self.pi + self.pd
-        else:
-            pidpy.yk = 0.0
-            self.pp = 0.0
-            self.pi = 0.0
-            self.pd = 0.0
-
-        pidpy.ek_1 = ek # e[k-1] = e[k]
-        pidpy.lpf_2 = pidpy.lpf_1 # update stores for LPF
-        pidpy.lpf_1 = lpf
-
-        # limit y[k] to GMA_HLIM and GMA_LLIM
-        if (pidpy.yk > pidpy.GMA_HLIM):
-            pidpy.yk = pidpy.GMA_HLIM
-        if (pidpy.yk < pidpy.GMA_LLIM):
-            pidpy.yk = pidpy.GMA_LLIM
-
-        return pidpy.yk
-
-    def calcPID_reg4(self, xk, tset, enable):
-        ek = 0.0
-        ek = tset - xk # calculate e[k] = SP[k] - PV[k]
-
-        if (enable):
-            #-----------------------------------------------------------
-            # Calculate PID controller:
-            # y[k] = y[k-1] + kc*(PV[k-1] - PV[k] +
-            # Ts*e[k]/Ti +
-            # Td/Ts*(2*PV[k-1] - PV[k] - PV[k-2]))
-            #-----------------------------------------------------------
-            self.pp = self.kc * (pidpy.xk_1 - xk) # y[k] = y[k-1] + Kc*(PV[k-1] - PV[k])
-            self.pi = self.k0 * ek  # + Kc*Ts/Ti * e[k]
-            self.pd = self.k1 * (2.0 * pidpy.xk_1 - xk - pidpy.xk_2)
-            pidpy.yk += self.pp + self.pi + self.pd
-        else:
-            pidpy.yk = 0.0
-            self.pp = 0.0
-            self.pi = 0.0
-            self.pd = 0.0
-
-        pidpy.xk_2 = pidpy.xk_1  # PV[k-2] = PV[k-1]
-        pidpy.xk_1 = xk    # PV[k-1] = PV[k]
-
-        # limit y[k] to GMA_HLIM and GMA_LLIM
-        if (pidpy.yk > pidpy.GMA_HLIM):
-            pidpy.yk = pidpy.GMA_HLIM
-        if (pidpy.yk < pidpy.GMA_LLIM):
-            pidpy.yk = pidpy.GMA_LLIM
-
-        return pidpy.yk
-
-
-
-
-

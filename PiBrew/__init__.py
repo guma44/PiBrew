@@ -14,7 +14,11 @@ from configobj import ConfigObj
 from threading import Thread, Event
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.mongoengine.wtf import model_form
-from classes import TemperatureController, Heater, Sensor, PID
+
+# classes usef or the controller
+from .Controller import TemperatureController, Heater, Sensor
+from .PID import PID
+
 import datetime
 
 global socketio, temperatures, temperature_sensor, heat_engine, temperature_controller, pid, params, db
@@ -78,9 +82,15 @@ def recipes():
     recipes = list(Recipe.objects())
     return render_template('recipes.html', recipes=recipes)
 
-@app.route('/settings')
+@app.route('/settings', methods=('GET', 'POST'))
 def settings():
-    return "No settings yet"
+    if request.method == 'POST':
+        # return redirect(url_for('recipes'))
+        pass
+    else:
+        return render_template('settings.html')
+
+
 
 @app.route('/show/<string:recipe_slug>', methods=("GET", 'POST'))
 def show(recipe_slug):

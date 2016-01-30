@@ -24,7 +24,8 @@ $(document).ready(function(){
 	$("#status_menu").addClass('active')
 
     //connect to the socket server.
-	var data = [[]];
+	var data_temp = [[], []];
+	var data_power = [[]];
 	var namespace = '/test';
     var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
     var number = 0.0;
@@ -44,6 +45,29 @@ $(document).ready(function(){
 			max: 100,
 			autoscaleMargin: null,
 			axisLabel: "Temp [°C]",
+		},
+		xaxis: {
+			show: true,
+			min: 0,
+			max: 1,
+			autoscaleMargin: null,
+			ticks: [],
+		}
+	};
+	var options_power = {
+		series: {
+            lines: { show: true },
+            points: { show: false }
+        },
+		axisLabels: {
+            show: true
+        },
+		yaxis: {
+			show: true,
+			min: 0,
+			max: 100,
+			autoscaleMargin: null,
+			axisLabel: "Power [%]",
 		},
 		xaxis: {
 			show: true,
@@ -139,12 +163,15 @@ $(document).ready(function(){
 	});
 
 	socket.on('data_for_plot', function(msg) {
-		var data_tmp = [[]]
+		var data_tmp = [[], []]
+		var data_pwr = [[]]
 		var max_tmp = 0.0;
 		console.log("I got the data");
 		console.log(msg);
 		for (var key in msg) {
-			data_tmp[0].push([parseFloat(key), parseFloat(msg[key].tem)]);
+			data_tmp[0].push([parseFloat(key), parseFloat(msg[key].temp)]);
+			data_tmp[1].push([parseFloat(key), parseFloat(msg[key].set_temp)]);
+			data_pwr[0].push([parseFloat(key), parseFloat(msg[key].power)]);
 			if (max_tmp <= parseFloat(msg[key])){
 				max_tmp = parseFloat(msg[key])
 			};
@@ -152,21 +179,24 @@ $(document).ready(function(){
 		var max_time = data_tmp[0][data_tmp[0].length - 1][0];
 		options_temp.xaxis.max = max_time;
 		console.log(data_tmp)
-		data = data_tmp
-		$.plot($("#plot_temp"), data, options_temp);
+		data_temp = data_tmp
+		data_power = data_pwr
+		$.plot($("#plot_temp"), data_temp, options_temp);
+		$.plot($("#plot_power"), data_power, options_power);
 		// plot_temp.setData(data_tmp);
 		// plot_temp.draw();
     });
 
 	socket.on('new_data_for_plot', function(msg) {
 		console.log("New data")
-		console.log(data[0].length);
-		console.log([parseFloat(msg.time), parseFloat(msg.temp)]);
-		data[0].push([parseFloat(msg.time), parseFloat(msg.temp)]);
-		console.log(data[0].length);
+		data_temp[0].push([parseFloat(msg.time), parseFloat(msg.temp)]);
+		data_temp[1].push([parseFloat(msg.time), parseFloat(msg.set_temp)]);
+		data_power[0].push([parseFloat(msg.time), parseFloat(msg.power)]);
 		var max_time = parseFloat(msg.time);
 		options_temp.xaxis.max = max_time;
-		$.plot($("#plot_temp"), data, options_temp);
+		options_power.xaxis.max = max_time;
+		$.plot($("#plot_temp"), data_temp, options_temp);
+		$.plot($("#plot_power"), data_power, options_power);
     });
 
 

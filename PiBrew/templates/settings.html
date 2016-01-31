@@ -9,28 +9,28 @@
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Kc</label>
 			<div class="col-sm-1">
-				<input name="recipe_name" type="number" placeholder="Kc" class="form-control input-md" required>
+				<input name="kc_param" type="number" value="{{ params.Kc }}" class="form-control input-md" required>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Ti</label>
 			<div class="col-sm-1">
-				<input name="recipe_name" type="number" placeholder="Ti" class="form-control input-md" required>
+				<input name="Ti_param" type="number" value="{{ params.Ti }}" class="form-control input-md" required>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Td</label>
 			<div class="col-sm-1">
-				<input name="recipe_name" type="number" placeholder="Td" class="form-control input-md" required>
+				<input name="Td_param" type="number" value="{{ params.Td }}" class="form-control input-md" required>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Cycle time</label>
 			<div class="col-sm-1">
-				<input name="recipe_name" type="number" placeholder="Time [s]" class="form-control input-md" required>
+				<input name="cycle_time_param" type="number" value="{{ params.cycle_time }}" class="form-control input-md" required>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>

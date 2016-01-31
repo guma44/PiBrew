@@ -1,7 +1,4 @@
 """
-Demo Flask application to test the operation of Flask with socket.io
-Aim is to create a webpage that is constantly updated with random numbers from a background python process.
-30th May 2014
 """
 
 # Start with a basic flask app webpage.
@@ -84,11 +81,20 @@ def recipes():
 
 @app.route('/settings', methods=('GET', 'POST'))
 def settings():
+    global params
     if request.method == 'POST':
-        # return redirect(url_for('recipes'))
-        pass
+        new_kc = request.form.get('Kc_param')
+        new_ti = request.form.get('Ti_param')
+        new_td = request.form.get('Td_param')
+        new_cycle_time = request.form.get('cycle_time_param')
+        new_params = {'Kc': new_kc,
+                      'Ti': new_ti,
+                      'Td': new_td,
+                      'cycle_time': new_cycle_time}
+        params.update(new_params)
+        return redirect(url_for('index'))
     else:
-        return render_template('settings.html')
+        return render_template('settings.html', params=params)
 
 
 

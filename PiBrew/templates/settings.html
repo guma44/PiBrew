@@ -2,35 +2,41 @@
 {% block scripts %}
 {% endblock %}
 {% block content %}
-<form action="setting" method="POST" accept-charset="utf-8">
+<form action="settings" method="POST" accept-charset="utf-8">
 	
 	<fieldset >
 		<legend>PID parameters</legend>
 		<div class="form-group row">
-			<label class="col-sm-1 control-label" for="textinput">Kc</label>
-			<div class="col-sm-1">
-				<input name="kc_param" type="number" value="{{ params.Kc }}" class="form-control input-md" required>
+			<label class="col-sm-1 control-label" for="textinput">Kf</label>
+			<div class="input-group col-sm-1">
+				<input name="Kc_param" type="number" value="{{ params.Kc }}" class="form-control input-md" required>
+				<span class="input-group-addon">%/°C</span>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Ti</label>
-			<div class="col-sm-1">
+			<div class="input-group col-sm-1">
 				<input name="Ti_param" type="number" value="{{ params.Ti }}" class="form-control input-md" required>
+				<span class="input-group-addon">sec</span>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
 			<label class="col-sm-1 control-label" for="textinput">Td</label>
-			<div class="col-sm-1">
+			<div class="input-group col-sm-1">
 				<input name="Td_param" type="number" value="{{ params.Td }}" class="form-control input-md" required>
+				<span class="input-group-addon">sec</span>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 		<div class="form-group row">
-			<label class="col-sm-1 control-label" for="textinput">Cycle time</label>
 			<div class="col-sm-1">
+				<label class="control-label" for="textinput">Cycle time</label>
+			</div>
+			<div class="input-group col-sm-1">
 				<input name="cycle_time_param" type="number" value="{{ params.cycle_time }}" class="form-control input-md" required>
+				<span class="input-group-addon">sec</span>
 				<div class="help-block with-errors"></div>
 			</div>
 		</div>

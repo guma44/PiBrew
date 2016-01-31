@@ -223,8 +223,8 @@ class TemperatureController(threading.Thread):
                             self.emit_current_temperature(self.current_temperature)
                             self.emit_current_power(self.current_power)
                             self.emit_remaining_time(-1)
-                            # self.heater.heat(int(self.params['cycle_time']), self.current_power)
-                            self.heater.heat(int(self.params['cycle_time']), 0) # TODO
+                            # self.heater.heat(int(self.params.cycle_time), self.current_power)
+                            self.heater.heat(int(self.params.cycle_time), 0) # TODO
 
 
                     else:
@@ -232,15 +232,15 @@ class TemperatureController(threading.Thread):
                         self.emit_current_temperature(self.current_temperature)
                         self.emit_current_power(self.current_power)
                         self.emit_remaining_time((60*self.recipe.current_step.span) - self.recipe.step_timer.elapsed(how='seconds'))
-                        # self.heater.heat(int(self.params['cycle_time']), self.current_power)
-                        self.heater.heat(int(self.params['cycle_time']), 0) # TODO
+                        # self.heater.heat(int(self.params.cycle_time), self.current_power)
+                        self.heater.heat(int(self.params.cycle_time), 0) # TODO
                 else:
                     self.current_power = self.pid.calcPID_reg4(self.current_temperature, self.recipe.current_step.temperature)
                     self.emit_current_temperature(self.current_temperature)
                     self.emit_current_power(self.current_power)
                     self.socketio.emit('remaining_time', {'remaining_time': "Waiting for temperature..."}, namespace=self.namespace)
-                    # self.heater.heat(int(self.params['cycle_time']), self.current_power)
-                    self.heater.heat(int(self.params['cycle_time']), 100) # TODO
+                    # self.heater.heat(int(self.params.cycle_time), self.current_power)
+                    self.heater.heat(int(self.params.cycle_time), 100) # TODO
 
             elif self.mode == 'manual':
                 pass
@@ -248,7 +248,7 @@ class TemperatureController(threading.Thread):
                 self.current_power = 0
                 self.emit_current_temperature(self.current_temperature)
                 self.emit_current_power(self.current_power)
-                self.heater.heat(int(self.params['cycle_time']), self.current_power)
+                self.heater.heat(int(self.params.cycle_time), self.current_power)
 
     def log_temperature():
         pass

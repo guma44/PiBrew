@@ -7,7 +7,8 @@ from flask import Flask, render_template, url_for, copy_current_request_context,
 from random import randint
 from time import sleep
 import os
-from configobj import ConfigObj
+import settings as params
+import utils
 from threading import Thread, Event
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.mongoengine.wtf import model_form
@@ -18,7 +19,7 @@ from .PID import PID
 
 import datetime
 
-global socketio, temperatures, temperature_sensor, heat_engine, temperature_controller, pid, params, db
+global socketio, temperatures, temperature_sensor, heat_engine, temperature_controller, pid, db, params_path
 
 app = Flask(__name__)
 app.config["MONGODB_SETTINGS"] = {'DB': "brewpy"}
@@ -37,8 +38,7 @@ thread_stop_event = Event()
 
 temperatures = []
 temperature_controller = Thread()
-params = ConfigObj(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')).dict()
-
+params_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'settings.py')
 
 class Step(db.EmbeddedDocument):
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
@@ -81,17 +81,16 @@ def recipes():
 
 @app.route('/settings', methods=('GET', 'POST'))
 def settings():
-    global params
     if request.method == 'POST':
         new_kc = request.form.get('Kc_param')
         new_ti = request.form.get('Ti_param')
         new_td = request.form.get('Td_param')
         new_cycle_time = request.form.get('cycle_time_param')
-        new_params = {'Kc': new_kc,
-                      'Ti': new_ti,
-                      'Td': new_td,
-                      'cycle_time': new_cycle_time}
-        params.update(new_params)
+        params.Kc = new_kc
+        params.Ti = new_ti
+        params.Td = new_td
+        params.cycle_time = new_cycle_time
+        utils.save_config(params_path, params)
         return redirect(url_for('index'))
     else:
         return render_template('settings.html', params=params)
@@ -173,16 +172,15 @@ def on_connect():
     print('Client connected')
     global temperature_controller
     global temperature_sensor
-    global params
     global heat_engine
     global pid
     global socketio
     temperature_sensor = Sensor()
     heat_engine = Heater()
-    pid = PID(int(params['cycle_time']),
-              float(params['Kc']),
-              float(params['Ti']),
-              float(params['Td']))
+    pid = PID(params.cycle_time,
+              params.Kc,
+              params.Ti,
+              params.Td)
 
     #Start the random number generator thread only if the thread has not been started before.
     if not temperature_controller.isAlive():

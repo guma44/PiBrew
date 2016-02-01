@@ -4,7 +4,7 @@ import ds18b20
 
 
 
-class NoDeviceDetected: pass
+class NoDeviceDetected(Exception): pass
 
 class Sensor(object):
     "Meta-class implementing a temperature sensor interface"
@@ -13,9 +13,9 @@ class Sensor(object):
     error_read = -100.0
 
     def __init__(self):
-        self._sensor = self.initialize_sensor()
+        self.sensor = self.initialize_sensor()
 
-    @abs.abstractmethod
+    @abc.abstractmethod
     def initialize_sensor(self):
         """Function that initializes sensor
         """
@@ -31,7 +31,10 @@ class Sensor(object):
         """
         pass
 
-def DS18B20Sensor(Sensor):
+class DS18B20Sensor(Sensor):
+
+    def __init__(self):
+        Sensor.__init__(self)
 
     def initialize_sensor(self):
         try:
@@ -44,14 +47,14 @@ def DS18B20Sensor(Sensor):
         if unit.lower() == 'celsius' or unit.lower().startswith('c'):
             try:
                 return self.sensor.get_temperature(unit=1)
-            except Exception:
-                sys.stderr.write("Temperature read error!\n")
+            except Exception, e:
+                sys.stderr.write("Temperature read error (%s)!\n" % (str(e)))
                 return self.error_read
         elif unit.lower() == 'fahrenheit' or unit.lower().startswith('f'):
             try:
                 return self.sensor.get_temperature(unit=2)
-            except Exception:
-                sys.stderr.write("Temperature read error!\n")
+            except Exception, e:
+                sys.stderr.write("Temperature read error (%s)!\n" % (str(e)))
                 return self.error_read
         else:
             raise Exception("Bad units: can be celsius or fahrenheit (C/F)")

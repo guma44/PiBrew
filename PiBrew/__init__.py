@@ -10,6 +10,7 @@ import os
 import settings as params
 import utils
 from threading import Thread, Event
+from Sensor import DS18B20Sensor
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.mongoengine.wtf import model_form
 
@@ -39,6 +40,9 @@ thread_stop_event = Event()
 temperatures = []
 temperature_controller = Thread()
 params_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'settings.py')
+
+temperature_sensor = Sensor()
+# temperature_sensor = DS18B20Sensor()
 
 class Step(db.EmbeddedDocument):
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
@@ -175,7 +179,7 @@ def on_connect():
     global heat_engine
     global pid
     global socketio
-    temperature_sensor = Sensor()
+    # temperature_sensor = Sensor()
     heat_engine = Heater()
     pid = PID(params.cycle_time,
               params.Kc,

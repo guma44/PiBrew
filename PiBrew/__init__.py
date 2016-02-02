@@ -10,7 +10,7 @@ import os
 import settings as params
 import utils
 from threading import Thread, Event
-from Sensor import DS18B20Sensor
+# from Sensor import DS18B20Sensor
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.mongoengine.wtf import model_form
 

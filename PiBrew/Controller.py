@@ -2,7 +2,7 @@ import threading
 from flask.ext.socketio import emit
 import time
 import random
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 #
 global temp_for_sensor
 temp_for_sensor = 20.0
@@ -58,47 +58,52 @@ class RecipeManager:
 
 class Heater:
     """Class that governs the heating process with GPIO"""
-    # def __init__(self, pin_number):
-    #     if pin_number > 0:
-    #         GPIO.setup(pin_number, GPIO.OUT)
+    def __init__(self, pin_number):
+        if pin_number > 0:
+            self.pin_number = pin_number
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(pin_number, GPIO.OUT)
 
-    # def heat(cycle_time, duty_cycle):
-    #     if duty_cycle == 0:
-    #         GPIO.output(pin_number, 0)
-    #         time.sleep(cycle_time)
-    #     elif duty_cycle == 100:
-    #         GPIO.output(pin_number, 1)
-    #         time.sleep(cycle_time)
-    #     else:
-    #         on_time, off_time = self.get_on_off_time(cycle_time, duty_cycle)
-    #         GPIO.output(pin_number, 1)
-    #         time.sleep(on_time)
-    #         GPIO.output(pin_number, 0)
-    #         time.sleep(off_time)
     def heat(self, cycle_time, duty_cycle):
-        global temp_for_sensor
         if duty_cycle == 0:
+            GPIO.output(self.pin_number, 0)
             print "No heating"
             time.sleep(cycle_time)
         elif duty_cycle == 100:
-            print "Heating 100%"
-            if temp_for_sensor <= 100:
-                temp_for_sensor += 2
-            else:
-                temp_for_sensor = 100.0
+            GPIO.output(self.pin_number, 1)
+            print "Heating 100"
             time.sleep(cycle_time)
         else:
-            print "Heating"
-            if temp_for_sensor <= 100:
-                temp_for_sensor += 2
-            else:
-                temp_for_sensor = 100.0
-            time.sleep(cycle_time)
+            on_time, off_time = self.get_on_off_time(cycle_time, duty_cycle)
+            print "Heating ", duty_cycle
+            GPIO.output(self.pin_number, 1)
+            time.sleep(on_time)
+            GPIO.output(self.pin_number, 0)
+            time.sleep(off_time)
+    # def heat(self, cycle_time, duty_cycle):
+    #     global temp_for_sensor
+    #     if duty_cycle == 0:
+    #         print "No heating"
+    #         time.sleep(cycle_time)
+    #     elif duty_cycle == 100:
+    #         print "Heating 100%"
+    #         if temp_for_sensor <= 100:
+    #             temp_for_sensor += 2
+    #         else:
+    #             temp_for_sensor = 100.0
+    #         time.sleep(cycle_time)
+    #     else:
+    #         print "Heating"
+    #         if temp_for_sensor <= 100:
+    #             temp_for_sensor += 2
+    #         else:
+    #             temp_for_sensor = 100.0
+    #         time.sleep(cycle_time)
 
     def get_on_off_time(self, ct, dt):
-        power = duty_cycle/100.0 # duty is in percent
-        on_time = cycle_time*(power)
-        off_time = cycle_time*(1.0 - power)
+        power = dt/100.0 # duty is in percent
+        on_time = ct*(power)
+        off_time = ct*(1.0 - power)
         return (on_time, off_time)
 
 
@@ -223,8 +228,8 @@ class TemperatureController(threading.Thread):
                             self.emit_current_temperature(self.current_temperature)
                             self.emit_current_power(self.current_power)
                             self.emit_remaining_time(-1)
-                            # self.heater.heat(int(self.params.cycle_time), self.current_power)
-                            self.heater.heat(int(self.params.cycle_time), 0) # TODO
+                            self.heater.heat(int(self.params.cycle_time), self.current_power)
+                            # self.heater.heat(int(self.params.cycle_time), 0) # TODO
 
 
                     else:
@@ -232,15 +237,15 @@ class TemperatureController(threading.Thread):
                         self.emit_current_temperature(self.current_temperature)
                         self.emit_current_power(self.current_power)
                         self.emit_remaining_time((60*self.recipe.current_step.span) - self.recipe.step_timer.elapsed(how='seconds'))
-                        # self.heater.heat(int(self.params.cycle_time), self.current_power)
-                        self.heater.heat(int(self.params.cycle_time), 0) # TODO
+                        self.heater.heat(int(self.params.cycle_time), self.current_power)
+                        # self.heater.heat(int(self.params.cycle_time), 0) # TODO
                 else:
                     self.current_power = self.pid.calcPID_reg4(self.current_temperature, self.recipe.current_step.temperature)
                     self.emit_current_temperature(self.current_temperature)
                     self.emit_current_power(self.current_power)
                     self.socketio.emit('remaining_time', {'remaining_time': "Waiting for temperature..."}, namespace=self.namespace)
-                    # self.heater.heat(int(self.params.cycle_time), self.current_power)
-                    self.heater.heat(int(self.params.cycle_time), 100) # TODO
+                    self.heater.heat(int(self.params.cycle_time), self.current_power)
+                    # self.heater.heat(int(self.params.cycle_time), 100) # TODO
 
             elif self.mode == 'manual':
                 pass
